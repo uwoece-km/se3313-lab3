@@ -37,13 +37,18 @@ Vagrant.configure("2") do |config|
     vb.cpus = cpu_count
     vb.memory = memory_count
     
-    vb.customize ["modifyvm", :id, "--uartmode1", "file", "procsim-xenial.log" ]
+    vb.customize ["modifyvm", :id, "--uartmode1", "file", "procsim-wily.log" ]
     
     vb.gui = with_gui
-    vb.customize ["modifyvm", :id, "--vram", "128"]
+    if with_gui
+      vb.customize ["modifyvm", :id, "--vram", "128"]
+    end
   end
 
   # Install/update prerequisite software:
+
+  config.vm.provision "shell", privileged: false, 
+    inline: "sed -i '1i force_color_prompt=yes' ~/.bashrc"
 
   config.vm.provision "shell", privileged: true, inline: <<-EOF
     apt-add-repository ppa:george-edison55/cmake-3.x -y
@@ -55,8 +60,8 @@ Vagrant.configure("2") do |config|
   EOF
 
   config.vm.provision "shell", privileged: true, inline: <<-EOF
-    echo "Installing build prequisisites: git, python3"
-    apt-get install -q -y git 
+    echo "Installing build prequisisites: git, cmake"
+    apt-get install -q -y git cmake
   EOF
 
   config.vm.provision "shell", privileged: true, inline: <<-EOF

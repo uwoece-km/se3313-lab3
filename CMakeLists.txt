@@ -11,6 +11,13 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIR}
 
 include_directories(include/)
 
+set(LAB3_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
+
+if(UNIX AND NOT APPLE)
+    # Add librt if on Linux 
+    list(APPEND LAB3_LIBRARIES rt)
+endif()
+
 # In-lab
 
 add_executable(lab src/lab.cpp)
@@ -20,10 +27,10 @@ add_executable(lab src/lab.cpp)
 add_library(report OBJECT include/report.hpp src/report.cpp)
 
 add_executable(asn-writer src/writer.cpp $<TARGET_OBJECTS:report>)
-target_link_libraries(asn-writer "${CMAKE_THREAD_LIBS_INIT}")
+target_link_libraries(asn-writer ${LAB3_LIBRARIES})
 
 add_executable(asn-reader src/reader.cpp $<TARGET_OBJECTS:report>)
-target_link_libraries(asn-reader "${CMAKE_THREAD_LIBS_INIT}")
+target_link_libraries(asn-reader ${LAB3_LIBRARIES})
 
 install(TARGETS asn-writer RUNTIME DESTINATION bin)
 install(TARGETS asn-reader RUNTIME DESTINATION bin)
