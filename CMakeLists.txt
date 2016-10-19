@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(se3313_lab3)
 
 find_package(Threads REQUIRED)
-find_package(Boost 1.58 REQUIRED ) # No libs required
+find_package(Boost 1.58 REQUIRED date_time) # No libs required
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -11,7 +11,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIR}
 
 include_directories(include/)
 
-set(LAB3_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
+set(LAB3_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}" ${Boost_LIBRARIES})
 
 if(UNIX AND NOT APPLE)
     # Add librt if on Linux 
