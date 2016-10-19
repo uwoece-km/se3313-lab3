@@ -37,8 +37,6 @@ Vagrant.configure("2") do |config|
     vb.cpus = cpu_count
     vb.memory = memory_count
     
-    vb.customize ["modifyvm", :id, "--uartmode1", "file", "procsim-wily.log" ]
-    
     vb.gui = with_gui
     if with_gui
       vb.customize ["modifyvm", :id, "--vram", "128"]
@@ -56,7 +54,6 @@ Vagrant.configure("2") do |config|
 
     apt-get update -qq
     apt-get dist-upgrade -y -q 
-
   EOF
 
   config.vm.provision "shell", privileged: true, inline: <<-EOF
@@ -65,20 +62,15 @@ Vagrant.configure("2") do |config|
   EOF
 
   config.vm.provision "shell", privileged: true, inline: <<-EOF
-    echo "Installing build compiler toolchains: clang gcc-5"
+    echo "Installing build compiler toolchains: gcc-5"
 
-    apt-get install -y clang-3.7 --force-yes
-
-    apt-get install -q -y gcc g++ \
-                          --force-yes
+    apt-get install -q -y gcc g++ --force-yes
   EOF
 
   config.vm.provision "shell", privileged: true, inline: <<-EOF
     echo "Installing build dependencies: ccache, and ninja"
     
     apt-get install -qq -y bash-completion --reinstall
-    apt-get install -qq -y ccache ninja-build \
-                          --no-install-recommends
     apt-get install -qq -y libboost1.58-all-dev
   EOF
   
@@ -87,9 +79,6 @@ Vagrant.configure("2") do |config|
 
     update-alternatives --install /usr/bin/cc cc `which gcc-5` 30
     update-alternatives --install /usr/bin/c++ c++ `which g++-5` 30
-    
-    update-alternatives --install /usr/bin/cc cc `which clang-3.7` 40
-    update-alternatives --install /usr/bin/c++ c++ `which clang++-3.7` 40
   EOM
   
   if ENV.has_key?("WORKSPACE")
