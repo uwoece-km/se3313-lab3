@@ -22,6 +22,7 @@ endif()
 # In-lab
 
 add_executable(lab src/lab.cpp)
+target_link_libraries(lab ${LAB3_LIBRARIES})
 
 # Assignment
 

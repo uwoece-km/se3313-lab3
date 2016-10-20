@@ -103,6 +103,13 @@ private:
         const bool d_createable;
     };
     
+    
+    /**
+     * Get a name for a memory section based on the userName and memoryName.
+     */
+    static const std::string getMemoryName(const char* const userName,
+                                           const char* const memoryName);
+    
 public:
     
     
@@ -110,11 +117,12 @@ public:
     /**
      * Initializes a shared instance which allows one to create containers and other data types.
      * 
+     * \param userName User ID for the student
      * \param memoryName Name of the new shared memory pool
      * \param allocatedBytes The number of bytes allocated, defaults to 65536
      */
     template <typename Tag>
-    factory(const Tag&, const char* memoryName, const size_t allocatedBytes = 65536);
+    factory(const Tag&, const char* userName, const char* memoryName, const size_t allocatedBytes = 65536);
     
     /**
      * FIXME
@@ -176,25 +184,34 @@ private:
     const bool d_cleanup;
 };
     
+const std::string factory::getMemoryName(const char* const userName, const char* const memoryName)
+{
+    std::ostringstream ss_catMemoryName;
+    ss_catMemoryName << userName << '_' << memoryName;
+    return ss_catMemoryName.str();
+}
+    
 // create_only_t:
 
 template <class Tag>
-factory::factory(const Tag& tag, const char* memoryName, const size_t allocatedBytes) 
-    : d_cleanup(std::is_same<bip::create_only_t, Tag>::value)
+factory::factory(const Tag& tag, const char* userName, const char* memoryName, const size_t allocatedBytes)
+    : d_cleanup(std::is_same<bip::create_only_t, Tag>::value) // true if instantiated as create_only
 {
     static_assert(std::is_same<bip::create_only_t, Tag>::value 
                   || std::is_same<bip::open_only_t, Tag>::value, "Unknown shared tag.");
     
-    std::ostringstream ss; ss << memoryName << "_deque_mux";
+    const auto catMemName = getMemoryName(userName, memoryName);
+    
+    std::ostringstream ss; ss << catMemName << "_deque_mux";
     const std::string mux_name(ss.str());
         
     if (d_cleanup) 
     {
-        bip::shared_memory_object::remove(memoryName);
+        bip::shared_memory_object::remove(catMemName.c_str());
         bip::named_mutex::remove(mux_name.c_str());
     }
     
-    d_impl = std::unique_ptr<impl>(new impl(tag, memoryName, mux_name.c_str(), allocatedBytes));
+    d_impl = std::unique_ptr<impl>(new impl(tag, catMemName.c_str(), mux_name.c_str(), allocatedBytes));
 }
 
 factory::~factory() 
