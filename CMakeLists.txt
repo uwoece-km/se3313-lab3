@@ -12,6 +12,7 @@ include_directories(SYSTEM ${Boost_INCLUDE_DIR}
 include_directories(include/)
 
 set(LAB3_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}" ${Boost_LIBRARIES})
+link_directories(${Boost_LIBRARY_DIRS})
 
 if(UNIX AND NOT APPLE)
     # Add librt if on Linux 
