@@ -31,7 +31,8 @@ Vagrant.configure("2") do |config|
 
   cpu_count = ENV.has_key?("CPUS") ? ENV["CPUS"] : 2
   memory_count = ENV.has_key?("MEMORY") ? ENV["MEMORY"] : 2048
-  with_gui = ENV.has_key?("WITH_GUI") ? ENV["WITH_GUI"] : true
+  with_gui = ENV.has_key?("WITH_GUI") ?(ENV["WITH_GUI"]) : true
+  with_gui = (with_gui == "true" || with_gui == "1")
 
   config.vm.provider "virtualbox" do |vb|
     vb.cpus = cpu_count
