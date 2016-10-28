@@ -26,21 +26,41 @@
 # This vagrantfile is used for creating a ubuntu trusty environment for 
 # building the procsim project
 
+require 'dotenv'
+
+Dotenv.load
+
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/wily64"
+  config.vm.box = "bento/ubuntu-16.04"
 
-  cpu_count = ENV.has_key?("CPUS") ? ENV["CPUS"] : 2
-  memory_count = ENV.has_key?("MEMORY") ? ENV["MEMORY"] : 2048
-  with_gui = ENV.has_key?("WITH_GUI") ?(ENV["WITH_GUI"]) : true
-  with_gui = (with_gui == "true" || with_gui == "1")
+  cpu_count   = ENV.has_key?("CPUS") ? ENV["CPUS"] : 1
+  memory_size = ENV.has_key?("MEMORY") ? ENV["MEMORY"] : 1024
+  vram_size   = ENV.has_key?("VRAM") ? ENV["VRAM"] : 128 
 
+  with_gui    = ENV.has_key?("WITH_GUI") ? (ENV["WITH_GUI"]) : true
+  with_gui    = (with_gui || with_gui == "true" || with_gui == "1")
+
+  host_port = ENV.has_key?("HOST_PORT") ? ENV["HOST_PORT"] : 9000
+  guest_port = ENV.has_key?("GUEST_PORT") ? ENV["GUEST_PORT"] : 9000
+
+  puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  puts "Hardware Configuration:"
+  puts "\tCPUS\t\t= #{cpu_count}"
+  puts "\tRAM\t\t= #{memory_size}"
+  puts "\tVRAM\t\t= #{vram_size}"
+  puts "\tGUI\t\t= #{with_gui}"
+  puts "\tPORT FWD\t= #{host_port} -> #{guest_port}"
+  puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+
+  config.vm.network "forwarded_port", guest: host_port, host: guest_port
+  
   config.vm.provider "virtualbox" do |vb|
     vb.cpus = cpu_count
-    vb.memory = memory_count
+    vb.memory = memory_size
     
     vb.gui = with_gui
     if with_gui
-      vb.customize ["modifyvm", :id, "--vram", "128"]
+      vb.customize ["modifyvm", :id, "--vram", "#{vram_size}"]
     end
   end
 
@@ -49,9 +69,15 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", privileged: false, 
     inline: "sed -i '1i force_color_prompt=yes' ~/.bashrc"
 
+  if with_gui
+    # Add the extra repository now, saves an extra update
+    config.vm.provision "shell", privileged: true, inline: <<-EOF
+      sudo apt-add-repository ppa:blaze/kf5
+    EOF
+  end
+
   config.vm.provision "shell", privileged: true, inline: <<-EOF
     apt-add-repository ppa:george-edison55/cmake-3.x -y
-    wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
 
     apt-get update -qq
     apt-get dist-upgrade -y -q 
@@ -69,10 +95,9 @@ Vagrant.configure("2") do |config|
   EOF
 
   config.vm.provision "shell", privileged: true, inline: <<-EOF
-    echo "Installing build dependencies: ccache, and ninja"
+    echo "Installing build dependencies: boost, ninja"
     
-    apt-get install -qq -y bash-completion --reinstall
-    apt-get install -qq -y libboost1.58-all-dev
+    apt-get install -qq -y libboost1.58-all-dev ninja-build
   EOF
   
   config.vm.provision "shell", privileged: true, inline: <<-EOM
@@ -91,9 +116,10 @@ Vagrant.configure("2") do |config|
 
   if with_gui
     config.vm.provision "shell", privileged: true, inline: <<-EOF 
-      apt-get install -y ubuntu-desktop \
-                        unity-lens-applications \
-                        unity-lens-files
+      apt-get install -y ubuntu-desktop kdevelop konsole \
+                         lightdm-gtk-greeter \
+                         unity-lens-applications unity-lens-files \
+                            --no-install-recommends
     EOF
 
     # Install VSCode 
@@ -104,7 +130,7 @@ Vagrant.configure("2") do |config|
   end
 
   # Do this last since it's best to make sure everyone else is updated first
-  config.vm.provision "shell", privileged: true, inline: "apt-get dist-upgrade -y ; apt-get autoremove --purge -y"
+  config.vm.provision "shell", privileged: true, inline: "apt-get autoremove --purge -y"
   
   config.vm.provision :reload
 end # end vagrant file 
