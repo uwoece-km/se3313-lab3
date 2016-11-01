@@ -31,6 +31,8 @@ require 'dotenv'
 Dotenv.load
 
 Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+
   cpu_count   = ENV.has_key?("CPUS") ? ENV["CPUS"] : 1
   memory_size = ENV.has_key?("MEMORY") ? ENV["MEMORY"] : 1024
   vram_size   = ENV.has_key?("VRAM") ? ENV["VRAM"] : 128 
@@ -49,8 +51,6 @@ Vagrant.configure("2") do |config|
   puts "\tGUI\t\t= #{with_gui}"
   puts "\tPORT FWD\t= #{host_port} -> #{guest_port}"
   puts ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-
-  config.vm.box = "bento/ubuntu-16.04"
 
   config.vm.network "forwarded_port", guest: host_port, host: guest_port
   
@@ -101,7 +101,8 @@ Vagrant.configure("2") do |config|
   
   if ENV.has_key?("WORKSPACE")
     WORKSPACE = ENV["WORKSPACE"]
-    config.vm.provision "shell", run: "always", inline: "echo 'Linking workspace: ~/workspace -> #{WORKSPACE}'"
+    config.vm.provision "shell", run: "always", 
+      inline: "echo 'Linking workspace: ~/workspace -> #{WORKSPACE}'"
     
     config.vm.synced_folder WORKSPACE, "/home/vagrant/workspace"
   end
