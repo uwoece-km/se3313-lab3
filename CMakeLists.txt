@@ -5,6 +5,7 @@ find_package(Threads REQUIRED)
 find_package(Boost 1.58 REQUIRED date_time) # No libs required
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_BUILD_TYPE Debug)
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIR}
                            lib/include)
