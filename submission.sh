@@ -6,4 +6,9 @@ if [[ $# -ne "1" ]]; then
   exit 1
 fi
 
-git archive -o $1-lab3asn.zip --format zip --prefix $1/ HEAD
+LAB_NO=3
+
+USER=$1
+git add -A 
+git commit -m "$USER - Auto-commit for submission: `date`"
+git archive -o $USER-lab${LAB_NO}asn.zip --format zip --prefix $USER/ HEAD
